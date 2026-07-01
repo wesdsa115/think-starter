@@ -6,21 +6,11 @@ import './styles.css';
 function Chat() {
 	// Must match the Durable Object binding name in wrangler.jsonc.
 	const agent = useAgent({ agent: 'MyAgent' });
-	const { messages, sendMessage, status } = useAgentChat({ agent });
+	const { messages, sendMessage, status, clearMessages } = useAgentChat({ agent });
 
-	const handleClear = async () => {
-		try {
-			// Delete the agent session to reset the chat
-			const response = await fetch(`/api/agent/${agent.id}`, { method: 'DELETE' });
-			if (response.ok) {
-				// Reload page to start fresh
-				window.location.reload();
-			} else {
-				console.error('Failed to clear chat');
-			}
-		} catch (error) {
-			console.error('Error clearing chat:', error);
-		}
+	const handleClear = () => {
+		// Use the clearMessages function from useAgentChat hook
+		clearMessages?.();
 	};
 
 	return (
