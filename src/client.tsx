@@ -5,14 +5,30 @@ import { createRoot } from 'react-dom/client';
 import './styles.css';
 
 function Chat() {
-	// Use a timestamp-based session ID to create new instances when clearing
+	// Generate initial session ID
 	const [sessionId, setSessionId] = useState(() => `session-${Date.now()}`);
 	const agent = useAgent({ agent: 'MyAgent', id: sessionId });
 	const { messages, sendMessage, status } = useAgentChat({ agent });
 
-	const handleClear = () => {
-		// Generate a new session ID to start a fresh chat
-		setSessionId(`session-${Date.now()}`);
+	const handleClear = async () => {
+		try {
+			// Reset the Durable Object state on the server (clears SQLite storage)
+			const response = await fetch('/reset-session', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ sessionId }),
+			});
+
+			if (response.ok) {
+				// Generate new session ID to create a fresh Durable Object instance
+				const newSessionId = `session-${Date.now()}`;
+				setSessionId(newSessionId);
+			} else {
+				console.error('Failed to reset session:', await response.text());
+			}
+		} catch (error) {
+			console.error('Error clearing chat:', error);
+		}
 	};
 
 	return (
