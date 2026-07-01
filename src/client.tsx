@@ -1,16 +1,18 @@
 import { useAgentChat } from '@cloudflare/ai-chat/react';
 import { useAgent } from 'agents/react';
+import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
 function Chat() {
-	// Must match the Durable Object binding name in wrangler.jsonc.
-	const agent = useAgent({ agent: 'MyAgent' });
-	const { messages, sendMessage, status, clearMessages } = useAgentChat({ agent });
+	// Use a timestamp-based session ID to create new instances when clearing
+	const [sessionId, setSessionId] = useState(() => `session-${Date.now()}`);
+	const agent = useAgent({ agent: 'MyAgent', id: sessionId });
+	const { messages, sendMessage, status } = useAgentChat({ agent });
 
 	const handleClear = () => {
-		// Use the clearMessages function from useAgentChat hook
-		clearMessages?.();
+		// Generate a new session ID to start a fresh chat
+		setSessionId(`session-${Date.now()}`);
 	};
 
 	return (
