@@ -9,12 +9,14 @@ function Chat() {
 	const { messages, sendMessage, status } = useAgentChat({ agent });
 
 	const handleClear = async () => {
-		// Send a clear command to the agent
 		try {
-			const response = await fetch('/clear', { method: 'POST' });
+			// Delete the agent session to reset the chat
+			const response = await fetch(`/api/agent/${agent.id}`, { method: 'DELETE' });
 			if (response.ok) {
-				// Reset the UI by reloading the page to start fresh
+				// Reload page to start fresh
 				window.location.reload();
+			} else {
+				console.error('Failed to clear chat');
 			}
 		} catch (error) {
 			console.error('Error clearing chat:', error);
