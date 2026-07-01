@@ -16,29 +16,37 @@ export class MyAgent extends Think<Env> {
 
 export default {
 	async fetch(request, env) {
-		// Handle clear request
-		if (request.method === 'POST' && new URL(request.url).pathname === '/clear') {
-			const url = new URL(request.url);
-			const agentId = url.searchParams.get('agentId') || 'default';
+		const url = new URL(request.url);
+		const pathname = url.pathname;
+
+		// Handle DELETE request to clear agent session
+		if (request.method === 'DELETE' && pathname.startsWith('/api/agent/')) {
+			const agentId = pathname.split('/').pop();
 			
+			if (!agentId) {
+				return new Response(JSON.stringify({ error: 'Invalid agent ID' }), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				});
+			}
+
 			try {
-				// Get the Durable Object for the agent and reset it
+				// Get and delete the Durable Object to reset it
 				const durableObjectId = env.MyAgent.idFromName(agentId);
 				const durableObject = env.MyAgent.get(durableObjectId);
 				
-				// Send a reset request to the Durable Object
-				await durableObject.fetch(new Request(request.url, {
-					method: 'POST',
-					headers: { 'X-Clear-History': 'true' }
+				// Delete the storage to clear all session data
+				await durableObject.fetch(new Request('http://localhost/delete', {
+					method: 'DELETE'
 				}));
 				
-				return new Response(JSON.stringify({ success: true }), { 
+				return new Response(JSON.stringify({ success: true, message: 'Chat history cleared' }), {
 					status: 200,
 					headers: { 'Content-Type': 'application/json' }
 				});
 			} catch (error) {
-				console.error('Error clearing history:', error);
-				return new Response(JSON.stringify({ error: 'Failed to clear history' }), { 
+				console.error('Error clearing chat:', error);
+				return new Response(JSON.stringify({ error: 'Failed to clear chat history' }), {
 					status: 500,
 					headers: { 'Content-Type': 'application/json' }
 				});
