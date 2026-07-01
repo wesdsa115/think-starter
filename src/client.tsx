@@ -8,9 +8,30 @@ function Chat() {
 	const agent = useAgent({ agent: 'MyAgent' });
 	const { messages, sendMessage, status } = useAgentChat({ agent });
 
+	const handleClear = async () => {
+		// Send a clear command to the agent
+		try {
+			const response = await fetch('/clear', { method: 'POST' });
+			if (response.ok) {
+				// Reset the UI by reloading the page to start fresh
+				window.location.reload();
+			}
+		} catch (error) {
+			console.error('Error clearing chat:', error);
+		}
+	};
+
 	return (
 		<div className="mx-auto flex h-screen max-w-2xl flex-col p-4">
-			<h1 className="mb-4 text-xl font-semibold">Think Agent</h1>
+			<div className="mb-4 flex items-center justify-between">
+				<h1 className="text-xl font-semibold">Think Agent</h1>
+				<button
+					onClick={handleClear}
+					className="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
+				>
+					Clear
+				</button>
+			</div>
 
 			<div className="flex-1 space-y-3 overflow-y-auto">
 				{messages.map((msg) => (
